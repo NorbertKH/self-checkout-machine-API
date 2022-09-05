@@ -15,9 +15,9 @@ namespace SelfCheckoutMachineAPI.Controllers
         }
 
         [HttpPost("api/v1/Stock")]
-        public async Task<IActionResult> Stock(Dictionary<string, int> stock)
+        public async Task<IActionResult> Stock(PaymentDto stock)
         {
-            if (_checkoutMachineService.Stock(stock))
+            if (_checkoutMachineService.Stock(stock.Inserted))
             {
                 return Ok(_checkoutMachineService.GetAvailableCurrency());
             }
@@ -31,10 +31,23 @@ namespace SelfCheckoutMachineAPI.Controllers
             return Ok(_checkoutMachineService.GetAvailableCurrency());
         }
 
-        [HttpGet("/api/v1/Checkout")]
-        public async Task<IActionResult> CheckOut()
+        [HttpPost("/api/v1/Checkout")]
+        public async Task<IActionResult> CheckOut(PaymentDto checkOut)
         {
-            return Ok(nameof(CheckOut));
+            Dictionary<string, int> change = new Dictionary<string, int>();
+            if (!_checkoutMachineService.Stock(checkOut.Inserted))
+            {
+                return BadRequest("Invalid currency given!");
+            }
+            try
+            {
+                change = _checkoutMachineService.ExchangeCurrency(checkOut);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            return Ok(change);
         }
     }
 }
