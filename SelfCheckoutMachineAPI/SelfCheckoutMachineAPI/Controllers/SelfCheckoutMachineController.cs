@@ -28,7 +28,7 @@ namespace SelfCheckoutMachineAPI.Controllers
         [HttpGet("api/v1/Stock")]
         public async Task<IActionResult> Stock()
         { 
-            return Ok();
+            return Ok(_checkoutMachineService.GetAvailableCurrency());
         }
 
         [HttpGet("/api/v1/Checkout")]
