@@ -10,5 +10,9 @@ namespace SelfCheckoutMachineAPI.Dtos
         public Dictionary<string, int> Inserted { get; set; } = new Dictionary<string, int>();
 
         public int? Price { get; set; }
+
+        public Dictionary<string, int>? InsertedEuro { get; set; } = null;
+
+        public Dictionary<string, int>? InsertedEuroCoins { get; set; } = null;
     }
 }

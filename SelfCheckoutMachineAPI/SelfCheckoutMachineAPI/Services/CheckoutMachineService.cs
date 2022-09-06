@@ -13,6 +13,8 @@ namespace SelfCheckoutMachineAPI.Services
         private Dictionary<string, int> _availableCurrency = new Dictionary<string, int>();
         private readonly CurrencyOptions _options;
         private readonly ILogger<CheckoutMachineService> _logger;
+        private readonly int _exchangeRate = 405;
+        private readonly double _exchangeRateCent = 4.05;
 
         /// <summary>
         /// 
@@ -88,6 +90,23 @@ namespace SelfCheckoutMachineAPI.Services
             {
                 price -= int.Parse(item.Key) * item.Value;
             }
+
+            if (payment.InsertedEuro != null)
+            {
+                foreach (var item in payment.InsertedEuro)
+                {
+                    price -= int.Parse(item.Key) * item.Value * _exchangeRate;
+                }
+            }
+
+            if (payment.InsertedEuroCoins != null)
+            {
+                foreach (var item in payment.InsertedEuroCoins)
+                {
+                    price -= Convert.ToInt16(double.Parse(item.Key) * _exchangeRateCent * (double)item.Value);
+                }
+            }
+
             price = -price;
             return CalculateChange(price, payment.Inserted);
         }
@@ -186,6 +205,23 @@ namespace SelfCheckoutMachineAPI.Services
             {
                 MoneyGiven += item.Value * int.Parse(item.Key);
             }
+
+            if (payment.InsertedEuro != null)
+            {
+                foreach (var item in payment.InsertedEuro)
+                {
+                    MoneyGiven += int.Parse(item.Key) * item.Value * _exchangeRate;
+                }
+            }
+
+            if (payment.InsertedEuroCoins != null)
+            {
+                foreach (var item in payment.InsertedEuroCoins)
+                {
+                    MoneyGiven += Convert.ToInt16(double.Parse(item.Key) * _exchangeRateCent * (double)item.Value);
+                }
+            }
+
             if (MoneyGiven >= payment.Price)
             {
                 return true;

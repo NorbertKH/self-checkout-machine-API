@@ -6,6 +6,13 @@
     public class CurrencyOptions
     {
         public const string SectionName = "CurrencyOptions";
+
         public List<string> ValidBills { get; set; } = new();
+
+
+        public List<string> ValidEuroBills { get; set; } = new();
+
+
+        public List<string> ValidEuroCoins { get; set; } = new();
     }
 }
