@@ -32,6 +32,7 @@ namespace SelfCheckoutMachineAPI.Services
         /// <returns>Bool</returns>
         public bool Stock(Dictionary<string, int> currency)
         {
+            _logger.LogInformation("Stocking with {currency} bills and values", currency);
             if (!IsCurrencyValid(currency))
             {
                 return false;
@@ -60,17 +61,22 @@ namespace SelfCheckoutMachineAPI.Services
         /// <exception cref="InvalidPaymentExcpetion">Thrwos different kind of exceptions depending on the payment</exception>
         public Dictionary<string, int> ExchangeCurrency(PaymentDto payment)
         {
+            _logger.LogInformation("Exchanging with {currency} bills and values", payment.Inserted);
+            _logger.LogInformation("Exchanging with {price} bills and values", payment.Price);
             if (!IsCurrencyValid(payment.Inserted))
             {
+                _logger.LogWarning("Invalid currency the valid bills are: {ValidBills}", _options.ValidBills);
                 throw new InvalidPaymentExcpetion("Invalid currency!");
             }
             if (!IsPaymentValid(payment))
             {
+                _logger.LogWarning("Money given is less than needed!");
                 throw new InvalidPaymentExcpetion("Invalid payment (The money given is less than needed)!");
             }
             int? price = null;
             if (payment.Price == null)
             {
+                _logger.LogWarning("No price was given!");
                 throw new InvalidPaymentExcpetion("No price given!");
             }
             else
@@ -95,7 +101,7 @@ namespace SelfCheckoutMachineAPI.Services
         /// <exception cref="InvalidPaymentExcpetion"></exception>
         private Dictionary<string, int> CalculateChange(int? price, Dictionary<string, int> payment)
         {
-            var reverseBills = _options.ValidBills;
+            List<string> reverseBills = new List<string>(_options.ValidBills);
             reverseBills.Reverse();
             Dictionary<string, int> change = new Dictionary<string, int>();
             Dictionary<string, int> tempCurency = new Dictionary<string, int>(_availableCurrency);
@@ -125,18 +131,16 @@ namespace SelfCheckoutMachineAPI.Services
                         {
                             _availableCurrency[money.Key] -= money.Value;
                         }
+                        _logger.LogWarning("Not enought money in the machine or out of exact change! ({})", _availableCurrency);
                         throw new InvalidPaymentExcpetion("Not enought money in the machine or out of exact change!");
                     }
                     continue;
                 }
 
-                _logger.LogWarning("curr: {price}", tempCurency[item]);
                 int numOfCurrency = tempCurency[item];
-                _logger.LogWarning("curr: {price}", numOfCurrency);
+                _logger.LogWarning("curr: {price}", _availableCurrency[item], item);
                 for (int i = 0; i <= _availableCurrency[item]; ++i)
                 {
-                    _logger.LogWarning("i: {price}", i);
-                    _logger.LogWarning("s: {price}", tempCurency[item]);
                     if (price >= int.Parse(item))
                     {
                         price -= int.Parse(item);
@@ -149,8 +153,6 @@ namespace SelfCheckoutMachineAPI.Services
                         {
                             change.Add(item, 1);
                         }
-                        _logger.LogWarning("price: {price}", price);
-                        _logger.LogWarning("remains: {price}", tempCurency);
                     }
                 }
             }
@@ -171,6 +173,7 @@ namespace SelfCheckoutMachineAPI.Services
 
             return change;
         }
+
         /// <summary>
         /// validates payment
         /// </summary>
