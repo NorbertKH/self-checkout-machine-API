@@ -4,6 +4,9 @@ using SelfCheckoutMachineAPI.Services;
 
 namespace SelfCheckoutMachineAPI.Controllers
 {
+    /// <summary>
+    /// Receives the API requests and handles messages
+    /// </summary>
     [ApiController]
     public class SelfCheckoutMachine : ControllerBase
     {
@@ -14,8 +17,13 @@ namespace SelfCheckoutMachineAPI.Controllers
             _checkoutMachineService = checkoutMachineService;
         }
 
+        /// <summary>
+        /// The request that handels money stocking
+        /// </summary>
+        /// <param name="stock">The money that was put into the machine</param>
+        /// <returns>OK (json) ot BadRequest</returns>
         [HttpPost("api/v1/Stock")]
-        public async Task<IActionResult> Stock(PaymentDto stock)
+        public IActionResult Stock(PaymentDto stock)
         {
             if (_checkoutMachineService.Stock(stock.Inserted))
             {
@@ -25,14 +33,23 @@ namespace SelfCheckoutMachineAPI.Controllers
             return BadRequest("Invalid currency given!");
         }
 
+        /// <summary>
+        /// Requset for the current amount of money in the machine
+        /// </summary>
+        /// <returns>OK (json)</returns>
         [HttpGet("api/v1/Stock")]
-        public async Task<IActionResult> Stock()
+        public IActionResult Stock()
         { 
             return Ok(_checkoutMachineService.GetAvailableCurrency());
         }
 
+        /// <summary>
+        /// Request for the exchange
+        /// </summary>
+        /// <param name="checkOut"></param>
+        /// <returns>OK (json) or BadRequest</returns>
         [HttpPost("/api/v1/Checkout")]
-        public async Task<IActionResult> CheckOut(PaymentDto checkOut)
+        public IActionResult CheckOut(PaymentDto checkOut)
         {
             Dictionary<string, int> change = new Dictionary<string, int>();
             if (!_checkoutMachineService.Stock(checkOut.Inserted))
